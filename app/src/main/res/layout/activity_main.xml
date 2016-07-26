@@ -25,7 +25,7 @@
         app:progressType="horizontal">
     </com.ops.zf.progress.CustomProgressView>
 
-    <com.ops.zf.progress.CustomProgressView android:layout_width="100dip"
+    <com.ops.zf.progress.CustomProgressView android:layout_width="20dip"
         android:layout_height="300dip"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
@@ -36,6 +36,20 @@
         app:progressTextColor="@color/white"
         app:progressTextBackgroundColor="@color/ent_blue"
         app:progressOrientation="top2bottom"
+        app:progressType="vertical">
+    </com.ops.zf.progress.CustomProgressView>
+
+    <com.ops.zf.progress.CustomProgressView android:layout_width="20dip"
+        android:layout_height="300dip"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:id="@+id/custom_progress_4"
+        app:viewBackgroundColor="@color/white"
+        app:progressColor="@color/ent_blue"
+        app:progressBackgroundColor="@color/gray_txt"
+        app:progressTextColor="@color/white"
+        app:progressTextBackgroundColor="@color/ent_blue"
+        app:progressOrientation="bottom2top"
         app:progressType="vertical">
     </com.ops.zf.progress.CustomProgressView>
 </RelativeLayout>

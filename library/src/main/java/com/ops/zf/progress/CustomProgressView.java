@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +25,8 @@ import com.ops.zf.progress.model.ProgressInfo;
 import com.ops.zf.progress.model.ProgressInfoHolder;
 import com.ops.zf.progress.model.ProgressOrientation;
 import com.ops.zf.progress.model.ProgressType;
+
+import org.w3c.dom.Text;
 
 /**
  * created by zfang 2016-07-25
@@ -43,6 +46,9 @@ public class CustomProgressView extends View {
 
     private int progressOrientation;
     private int progressType;
+
+    private boolean shouldDrawTextBackground = false;
+    private long progressTotalTime;
 
     private Paint progressBGPaint = null;
     private Paint progressPaint = null;
@@ -102,7 +108,6 @@ public class CustomProgressView extends View {
 
         textBGPaint = new Paint();
         textBGPaint.setStyle(Paint.Style.FILL);
-        textBGPaint.setColor(mResources.getColor(android.R.color.holo_red_dark));
         textBGPaint.setStrokeWidth(dips(2));
 
         textPaint = new TextPaint();
@@ -132,6 +137,16 @@ public class CustomProgressView extends View {
 
             progressOrientation = array.getInt(R.styleable.CustomProgressView_progressOrientation, ProgressOrientation.ORIENTATION_RIGHT2LEFT);
             progressType = array.getInt(R.styleable.CustomProgressView_progressType, ProgressType.TYPE_HORIZONTAL);
+
+            shouldDrawTextBackground = array.getBoolean(R.styleable.CustomProgressView_progressTotalTime, true);
+            String time = array.getString(R.styleable.CustomProgressView_progressTotalTime);
+            if (!TextUtils.isEmpty(time)) {
+                try {
+                    progressTotalTime = Long.valueOf(array.getString(R.styleable.CustomProgressView_progressTotalTime));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
         } finally {
             array.recycle();
         }
@@ -235,7 +250,7 @@ public class CustomProgressView extends View {
             } else if (ProgressOrientation.ORIENTATION_TOP2BOTTOM == progressInfo.getProgressOrientation()) {
                 drawProgressTop2Bottom(canvas);
             } else if (ProgressOrientation.ORIENTATION_BOTTOM2TOP == progressInfo.getProgressOrientation()) {
-
+                drawProgressBottom2Top(canvas);
             }
         }
     }
@@ -353,11 +368,41 @@ public class CustomProgressView extends View {
         String progressStr = (int) progress + "s";
         Rect textBounds = new Rect();
         textPaint.getTextBounds(progressStr, 0, progressStr.length(), textBounds);
-        canvas.save();
+        Rect textArea = new Rect();
+        int textAreaLeft = 0;
+        textArea.set(textAreaLeft, (int) (endY - textBounds.width()), (int) (textAreaLeft + textBounds.height() + 2 * progressPaint.getStrokeWidth()), (int) (endY));
+        //canvas.drawRect(textArea, textBGPaint);
+        canvas.drawText(progressStr, progressPaint.getStrokeWidth()/* + textBounds.height()*/, endY, textPaint);
+
+        /*canvas.save();
+        canvas.translate(textArea.left + textArea.width() / 2, textArea.top + textArea.height() / 2);
         canvas.rotate(-90);
-        canvas.drawText(progressStr, progressPaint.getStrokeWidth() + textBounds.height(), endY, textPaint);
-        canvas.drawRect(textBounds, textBGPaint);
-        canvas.restore();
+        canvas.drawText(progressStr, 0*//*progressPaint.getStrokeWidth() + textBounds.height()*//*, endY, textPaint);
+        canvas.restore();*/
+    }
+
+    private void drawProgressBottom2Top(Canvas canvas) {
+        double progress = progressHolder.getProgress();
+
+        float endY = (float) (progress / progressInfo.getMax() * height);
+        if (isDebug) {
+            Log.e(TAG, "progress = " + progress + ", endY = " + endY);
+        }
+        canvas.drawLine(width, 0.0f, width, height - endY, progressPaint);
+        canvas.drawLine(width, height, width, height - endY, progressBGPaint);
+
+        String progressStr = ((int) (progressInfo.getMax() - ((int) progress))) + "s";
+        Rect textBounds = new Rect();
+        textPaint.getTextBounds(progressStr, 0, progressStr.length(), textBounds);
+        Rect textArea = new Rect();
+        int textAreaLeft = 0;
+        textArea.set(textAreaLeft, (int) (endY - textBounds.width()), (int) (textAreaLeft + textBounds.height() + 2 * progressPaint.getStrokeWidth()), (int) (endY));
+        //canvas.drawRect(textArea, textBGPaint);
+        int textBaseLine = (int) (height - endY);
+        if (textBaseLine <= textBounds.height()) {
+            textBaseLine = textBounds.height();
+        }
+        canvas.drawText(progressStr, width - textBounds.width() - progressPaint.getStrokeWidth(), textBaseLine, textPaint);
     }
 
     private float dips(final float dips) {

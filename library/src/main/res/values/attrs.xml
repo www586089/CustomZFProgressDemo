@@ -22,6 +22,9 @@
             <enum name="horizontal" value="0" />
             <enum name="vertical" value="1" />
         </attr>
-        <attr name="drawTextBackground" format="boolean"></attr>
+        <!--是否绘制tex的背景矩形框-->
+        <attr name="shouldDrawTextBackground" format="boolean"></attr>
+        <!--由于是用动画实现，这里配置多久结束动画-->
+        <attr name="progressTotalTime" format="reference"></attr>
     </declare-styleable>
 </resources>

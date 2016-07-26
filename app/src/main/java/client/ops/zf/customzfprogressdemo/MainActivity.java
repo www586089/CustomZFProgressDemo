@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
     CustomProgressView customProgress2;
     @Bind(R.id.custom_progress_3)
     CustomProgressView customProgress3;
+    @Bind(R.id.custom_progress_4)
+    CustomProgressView customProgress4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         initProgressRight2Left(customProgress1, 2);
         initProgressLeft2Right(customProgress2, 2);
         initProgressTop2Bottom(customProgress3, 2);
+        initProgressBotttom2Top(customProgress4, 2);
     }
 
     @Override
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         stopProgressView(customProgress1);
         stopProgressView(customProgress2);
+        stopProgressView(customProgress3);
+        stopProgressView(customProgress4);
     }
 
     private void initProgressRight2Left(CustomProgressView progressView, int minutes) {
@@ -50,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void initProgressTop2Bottom(CustomProgressView progressView, int minutes) {
         progressView.setProgressInfo(getProgressInfoTop2Bottom(minutes));
+        progressView.progressStart();
+    }
+
+    private void initProgressBotttom2Top(CustomProgressView progressView, int minutes) {
+        progressView.setProgressInfo(getProgressInfoBottom2Top(minutes));
         progressView.progressStart();
     }
 
@@ -85,6 +95,16 @@ public class MainActivity extends AppCompatActivity {
         progressInfo.setMax(minutes * 60);
         progressInfo.setProgressType(ProgressType.TYPE_VERTICAL);
         progressInfo.setProgressOrientation(ProgressOrientation.ORIENTATION_TOP2BOTTOM);
+        progressInfo.setTimeTotal(minutes * 60 * 1000);
+        return progressInfo;
+    }
+
+    private ProgressInfo getProgressInfoBottom2Top(int minutes) {
+        ProgressInfo progressInfo = new ProgressInfo();
+        progressInfo.setMin(0);
+        progressInfo.setMax(minutes * 60);
+        progressInfo.setProgressType(ProgressType.TYPE_VERTICAL);
+        progressInfo.setProgressOrientation(ProgressOrientation.ORIENTATION_BOTTOM2TOP);
         progressInfo.setTimeTotal(minutes * 60 * 1000);
         return progressInfo;
     }
