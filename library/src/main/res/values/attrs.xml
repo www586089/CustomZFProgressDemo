@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomProgressView">
+        <attr name="viewBackgroundColor" format="reference"/><!--进度条view的整个背景颜色 -->
+        <attr name="progressTextColor" format="reference"/><!--进度条view上进度信息文字的颜色 -->
+        <attr name="progressTextBackgroundColor" format="reference"/><!--进度条view上进度信息文字背景颜色 -->
+        <attr name="progressColor" format="reference"/><!--进度条view上进度的颜色 -->
+        <attr name="progressBackgroundColor" format="reference"/><!--进度条view上进度的背景颜色 -->
+
+        <!--进度条的方向，左右、右左、上下、下上 -->
+        <attr name="progressOrientation" format="enum">
+            <enum name="none" value="-1" />
+            <enum name="left2right" value="0" />
+            <enum name="right2left" value="1" />
+            <enum name="top2bottom" value="2" />
+            <enum name="bottom2top" value="3" />
+        </attr>
+
+        <!--进度条的类型，垂直进度条、水平进度条 -->
+        <attr name="progressType" format="enum">
+            <enum name="none" value="-1" />
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        <attr name="drawTextBackground" format="boolean"></attr>
+    </declare-styleable>
+</resources>

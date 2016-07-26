@@ -7,6 +7,7 @@ import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -30,9 +31,18 @@ import com.ops.zf.progress.model.ProgressType;
 public class CustomProgressView extends View {
 
     private String TAG = CustomProgressView.class.getSimpleName();
-    private boolean isDebug = false;
+    private boolean isDebug = true;
     private int width = 0;
     private int height = 0;
+
+    private int viewBackgroundColor;
+    private int progressTextColor;
+    private int progressTextBackgroundColor;
+    private int progressColor;
+    private int progressBackgroundColor;
+
+    private int progressOrientation;
+    private int progressType;
 
     private Paint progressBGPaint = null;
     private Paint progressPaint = null;
@@ -55,25 +65,25 @@ public class CustomProgressView extends View {
 
     public CustomProgressView(Context context) {
         super(context);
-        init(context);
+        init(context, null);
     }
 
     public CustomProgressView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init(context, attrs);
     }
 
     public CustomProgressView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init(context, attrs);
     }
 
     public CustomProgressView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
+        init(context, attrs);
     }
 
-    private void init(Context context) {
+    private void init(Context context, AttributeSet attrs) {
         this.context = context;
         m1Dip = getResources().getDisplayMetrics().density;
         m1Sp = getResources().getDisplayMetrics().scaledDensity;
@@ -82,13 +92,13 @@ public class CustomProgressView extends View {
         mResources = context.getResources();
         progressPaint = new Paint();
         progressPaint.setStyle(Paint.Style.FILL);
-        progressPaint.setColor(mResources.getColor(android.R.color.holo_red_dark));
         progressPaint.setStrokeWidth(dips(2));
 
         progressBGPaint = new Paint();
         progressBGPaint.setStyle(Paint.Style.FILL);
-        progressBGPaint.setColor(mResources.getColor(android.R.color.holo_red_dark));
         progressBGPaint.setStrokeWidth(dips(2));
+
+
 
         textBGPaint = new Paint();
         textBGPaint.setStyle(Paint.Style.FILL);
@@ -108,6 +118,23 @@ public class CustomProgressView extends View {
         progressInfo.setProgressType(ProgressType.TYPE_HORIZONTAL);
         progressInfo.setProgressOrientation(ProgressOrientation.ORIENTATION_RIGHT2LEFT);
         //}
+        TypedArray array = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.CustomProgressView,
+                0, 0);
+
+        try {
+            viewBackgroundColor = array.getColor(R.styleable.CustomProgressView_viewBackgroundColor, mResources.getColor(R.color.map_overlay_bg_color));
+            progressPaint.setColor(array.getColor(R.styleable.CustomProgressView_progressColor, mResources.getColor(R.color.orange_new)));
+            progressBGPaint.setColor(array.getColor(R.styleable.CustomProgressView_progressBackgroundColor, mResources.getColor(R.color.ent_blue)));
+            textPaint.setColor(array.getColor(R.styleable.CustomProgressView_progressTextColor, mResources.getColor(R.color.white)));
+            textBGPaint.setColor(array.getColor(R.styleable.CustomProgressView_progressTextBackgroundColor, mResources.getColor(R.color.orange_new)));
+
+            progressOrientation = array.getInt(R.styleable.CustomProgressView_progressOrientation, ProgressOrientation.ORIENTATION_RIGHT2LEFT);
+            progressType = array.getInt(R.styleable.CustomProgressView_progressType, ProgressType.TYPE_HORIZONTAL);
+        } finally {
+            array.recycle();
+        }
     }
 
     public ProgressInfo getProgressInfo() {
@@ -119,16 +146,6 @@ public class CustomProgressView extends View {
     }
 
     public void progressStart() {
-        //根据进度条类型设置画笔
-        int color = context.getResources().getColor(R.color.orange_new);
-        if (ProgressOrientation.ORIENTATION_LEFT2RIGHT == progressInfo.getProgressOrientation()) {
-            progressPaint.setColor(color);
-        } else if (ProgressOrientation.ORIENTATION_RIGHT2LEFT == progressInfo.getProgressOrientation()) {
-            progressPaint.setColor(mResources.getColor(R.color.map_overlay_bg_color));
-            progressBGPaint.setColor(color);
-        }
-        textBGPaint.setColor(color);
-        textPaint.setColor(Color.WHITE);
         progressHolder = new ProgressHolder(progressInfo.getMin());
         ProgressHolder end = new ProgressHolder(progressInfo.getMax());
 
@@ -215,14 +232,10 @@ public class CustomProgressView extends View {
                 drawProgressLeft2Right(canvas);
             } else if (ProgressOrientation.ORIENTATION_RIGHT2LEFT == progressInfo.getProgressOrientation()) {
                 drawProgressRight2Left(canvas);
-            } else {
-                /*double progress = progressHolder.getProgress();
-                canvas.drawLine(0.0f, 0.0f, prevEndX, 0.0f, progressPaint);
+            } else if (ProgressOrientation.ORIENTATION_TOP2BOTTOM == progressInfo.getProgressOrientation()) {
+                drawProgressTop2Bottom(canvas);
+            } else if (ProgressOrientation.ORIENTATION_BOTTOM2TOP == progressInfo.getProgressOrientation()) {
 
-                String progressStr = ((int) progress) + "";
-                Rect textBounds = new Rect();
-                textPaint.getTextBounds(progressStr, 0, progressStr.length(), textBounds);
-                canvas.drawText(progressStr, prevEndX, progressPaint.getStrokeWidth() + textBounds.height(), textPaint);*/
             }
         }
     }
@@ -255,6 +268,19 @@ public class CustomProgressView extends View {
         if ((width > endX) && (width - (endX + textBounds.width())) < textPadding) {
             endX = width - textPadding - textBounds.width();
         }
+        //canvas.drawText(progressStr, endX, progressPaint.getStrokeWidth() + textBounds.height(), textPaint);
+
+        int rectLeft = (int) (endX - textPadding);
+        if (rectLeft < 0) {
+            rectLeft = 0;
+        }
+        int rectRight = (int) (rectLeft + textBounds.width() + 2 * textPadding);
+        Rect textRect = new Rect();
+        textRect.set(rectLeft,
+                0,
+                rectRight,
+                (int) (progressPaint.getStrokeWidth() + textBounds.height() + progressPaint.getStrokeWidth()/* + dips(1)*/));
+        canvas.drawRect(textRect, textBGPaint);
         canvas.drawText(progressStr, endX, progressPaint.getStrokeWidth() + textBounds.height(), textPaint);
     }
 
@@ -265,8 +291,8 @@ public class CustomProgressView extends View {
         if (isDebug) {
             Log.e(TAG, "progress = " + progress + ", endX = " + endX);
         }
-        canvas.drawLine(width, 0.0f, width - endX, 0.0f, progressPaint);
-        canvas.drawLine(0, 0, width - endX, 0, progressBGPaint);
+        canvas.drawLine(width, 0.0f, width - endX, 0.0f, progressBGPaint);
+        canvas.drawLine(0, 0, width - endX, 0, progressPaint);
 
         String progressStr = ((int) (progressInfo.getMax() - ((int) progress))) + "s";
         Rect textBounds = new Rect();
@@ -312,6 +338,26 @@ public class CustomProgressView extends View {
                 (int) (progressPaint.getStrokeWidth() + textBounds.height() + progressPaint.getStrokeWidth()/* + dips(1)*/));
         canvas.drawRect(textRect, textBGPaint);
         canvas.drawText(progressStr, width - endX - textBounds.width() - textPadding, progressPaint.getStrokeWidth() / 2 + textBounds.height(), textPaint);
+    }
+
+    private void drawProgressTop2Bottom(Canvas canvas) {
+        double progress = progressHolder.getProgress();
+
+        float endY = (float) (progress / progressInfo.getMax() * height);
+        if (isDebug) {
+            Log.e(TAG, "progress = " + progress + ", endY = " + endY);
+        }
+        canvas.drawLine(0, 0.0f, 0, endY, progressPaint);
+        //canvas.drawLine(0, 0, height - endY, 0, progressBGPaint);
+
+        String progressStr = (int) progress + "s";
+        Rect textBounds = new Rect();
+        textPaint.getTextBounds(progressStr, 0, progressStr.length(), textBounds);
+        canvas.save();
+        canvas.rotate(-90);
+        canvas.drawText(progressStr, progressPaint.getStrokeWidth() + textBounds.height(), endY, textPaint);
+        canvas.drawRect(textBounds, textBGPaint);
+        canvas.restore();
     }
 
     private float dips(final float dips) {

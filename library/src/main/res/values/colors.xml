@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="view_bg_color">#aaa</color>
     <color name="map_overlay_bg_color">#909090</color>
     <color name="ent_blue">#48b4ff</color>
     <color name="ent_blue_select">#2FAAFF</color>
     <color name="orange_new">#FEA805</color>
     <color name="orange_new_selected">#fe9705</color>
     <color name="gray_txt">#a9a9a9</color>
+    <color name="white">#ffffff</color>
 </resources>
